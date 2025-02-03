@@ -1,5 +1,7 @@
 // Necessary Imports (you will need to use this)
-const { Student } = require('./Student')
+const { error } = require('console');
+const { Student } = require('./Student');
+const fs = require('fs').promises;
 
 /**
  * Node Class (GIVEN, you will need to use this)
@@ -15,7 +17,7 @@ class Node {
    */
   constructor(data, next = null) {
     this.data = data;
-    this.next = next
+    this.next = next;
   }
 }
 
@@ -37,6 +39,9 @@ class LinkedList {
    */
   constructor() {
     // TODO
+    this.head = null;
+    this.tail = null;
+    this.length = 0;
   }
 
   /**
@@ -49,6 +54,17 @@ class LinkedList {
    */
   addStudent(newStudent) {
     // TODO
+    let node = new Node(newStudent);   
+    //console.log("Student adding: ",newStudent.getString()); used for testing purpose
+    //console.log(node.data.getSpecialization());
+    if(!this.head){
+      this.head = node;
+      this.tail = node;
+    } else {
+      this.tail.next = node;
+      this.tail = node;     
+    }     
+    this.length++;
   }
 
   /**
@@ -61,6 +77,37 @@ class LinkedList {
    */
   removeStudent(email) {
     // TODO
+    if(!this.head){  //Checks whether head is null or not. if null, returns.
+      return;
+    }
+
+    let current = this.head; //if head not null, then current points to the head.
+    let previous = null;    // previous is set to null initially
+  
+    if (current.data.getEmail()===email){  // checks to see whether the first student email matches the removefn param email. if matches
+      console.log(`Removing Student: , ${current.data.getEmail()}`);
+      this.head = current.next;            //next student is assigned to the head. 
+              
+       if (this.head === null){           // If there was only one students, means no ther students, then making the tail as null as well.
+        this.tail = null;
+       }     
+       this.length--;
+       return;
+    } else {
+      while(current){                     // if not, then iterates through the list until it matches.
+        if(current.data.getEmail() === email){  //when it matches
+          previous.next=current.next;           //the next student is assigned to previous thus by removing the current student from the list
+          if(current.next === null){            //if the next student is null, tail is assigned to the previous student.
+            this.tail = previous;
+          }
+          this.length--;                        //length is reduced to by 1
+          return;
+        }
+        previous = current;
+        current = current.next;
+      }
+      console.log(`Student with email ${email} not found)`);
+    }
   }
 
   /**
@@ -70,7 +117,19 @@ class LinkedList {
    */
   findStudent(email) {
     // TODO
-    return -1
+    let current = this.head;    
+
+    while(current){
+      if(current.data.getEmail()===email){
+        //console.log("Student found");        Used for testing purpose
+        //console.log(current.data.getString());
+        return current.data;
+      }
+      
+      current = current.next;
+    }
+    //console.log("Student not found");   Used for testing purpose
+    return -1;
   }
 
   /**
@@ -78,8 +137,12 @@ class LinkedList {
    * EFFECTS:   Clears all students from the Linked List
    * RETURNS:   None
    */
-  #clearStudents() {
+  clearStudents() {
     // TODO
+    this.head = null;
+    this.tail = null;
+    this.length = 0;
+
   }
 
   /**
@@ -92,7 +155,14 @@ class LinkedList {
    */
   displayStudents() {
     // TODO
-    return "";
+    let current = this.head;
+    let displaylist = [];
+    while(current){
+      displaylist.push(current.data.getName());
+      current=current.next;
+    }
+    console.log(displaylist);
+    return displaylist.join(", ");
   }
 
   /**
@@ -102,7 +172,42 @@ class LinkedList {
    */
   #sortStudentsByName() {
     // TODO
-    return [];
+    const sortedStudents = [];
+    let current = this.head;
+    //console.log(current.data.getString()); Used it for testing purpose
+    if(this.length === 0){
+      return [];
+    } else
+    while (current){
+      sortedStudents.push(
+        {name: current.data.getName(),
+        year: current.data.getYear(),
+        email: current.data.getEmail(),
+        specialization: current.data.getSpecialization()}      
+
+        //current.data
+      );
+      //console.log(sortedStudents); Used for testing purpose
+      current = current.next;
+    }
+    
+    sortedStudents.sort((a,b)=>{
+      if(a.getName() < b.getName()){
+        return -1;
+      }
+      if(a.getName()>b.getName()){
+        return 1;
+      }
+      return 0;
+    });
+    console.log("Sorted students List ", sortedStudents); 
+    return sortedStudents;   
+  }
+
+  //public method to return the sorted students by name using the private method.
+  sortedList(){
+    const studentsSorted = this.#sortStudentsByName();
+    return studentsSorted;
   }
 
   /**
@@ -114,8 +219,31 @@ class LinkedList {
    */
   filterBySpecialization(specialization) {
     // TODO
-    return [];
-  }
+    const filteredSpecStudents = [];
+    let current = this.head;
+    if(this.length === 0){
+      return [];
+    } else {
+      while(current){
+        if(current.data.getSpecialization().toLowerCase() === specialization.toLowerCase()){
+          filteredSpecStudents.push(current.data);
+        }
+          current = current.next;      
+      }
+      //console.log("Filtered Students: ",filteredSpecStudents); Used for test purpose
+      filteredSpecStudents.sort((a,b)=>{
+        if (a.getName()<b.getName()){
+          return -1;
+        } else if (a.getName()>b.getName()){
+          return 1;
+        } else {
+          return 0;
+        }
+       
+      })    
+      //console.log("Filtered and Sorted by Spec: ",filteredSpecStudents); Used for test purpose
+      return filteredSpecStudents;
+  }}
 
   /**
    * REQUIRES:  minAge (Number)
@@ -124,9 +252,33 @@ class LinkedList {
    * CONSIDERATIONS:
    * - Use sortStudentsByName()
    */
-  filterByMinAge(minAge) {
+  filterByMinYear(minYear) {
     // TODO
-    return [];
+    const filteredMinYearStudents = [];
+    let current = this.head;
+    if(this.length === 0){
+      return [];
+    } else {
+      while(current){
+        if (current.data.getYear() >= minYear){
+          filteredMinYearStudents.push(current.data);
+        }
+        current = current.next;
+      }
+      //console.log("Filtered Students by minYear: ", filteredMinYearStudents);     
+    }
+
+    filteredMinYearStudents.sort((a,b)=>{
+      if(a.getName() < b.getName()){
+        return -1;
+      } else if (a.getName() > b.getName()){
+        return 1;
+      } else {
+        return 0;
+      }
+    })
+    //console.log("Sorted Filtered Students by minYear: ", filteredMinYearStudents);
+    return filteredMinYearStudents;
   }
 
   /**
@@ -136,6 +288,25 @@ class LinkedList {
    */
   async saveToJson(fileName) {
     // TODO
+     
+     const newstudentsArray = [];
+     let current = this.head;
+     try {
+        while(current){
+          newstudentsArray.push({
+            name: current.data.getName(),
+            year: current.data.getYear(),
+            email: current.data.getEmail(),
+            specialization: current.data.getSpecialization()
+          });
+          current = current.next;
+        }
+        await fs.writeFile(fileName,JSON.stringify(newstudentsArray),'utf8');
+        console.log("File written successfully");
+     }
+     catch(error){
+      console.log("Error:", error);
+     }
   }
 
   /**
@@ -147,6 +318,26 @@ class LinkedList {
    */
   async loadFromJSON(fileName) {
     // TODO
+    try{
+      const data = await fs.readFile(fileName,'utf8');
+      const studentsArray = JSON.parse(data);
+      console.log('File Content:',studentsArray);
+
+      this.clearStudents();
+
+      studentsArray.forEach(studentData => {
+        const {name, year, email, specialization } = studentData;
+        const student = new Student (name, year, email, specialization);
+        this.addStudent(student);
+      });
+      console.log("Students loaded into the LinkedList");    
+
+    }
+    catch (error) {
+      console.log('Error: ', error);
+    }
+
+
   }
 
 }

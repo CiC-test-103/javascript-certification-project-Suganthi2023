@@ -23,7 +23,7 @@ function main() {
       - remove [email]: Remove a student by email
       - display: Show all students
       - find [email]: Find a student by email
-      - save: Save the current linked list to the specified file
+      - save [fileName]: Save the current linked list to the specified file
       - load [fileName]: Load a linked list from a file
       - clear: Clear the current linked list
       - q: Quit the terminal
@@ -45,9 +45,11 @@ async function handleCommand(command) {
        *   - Use implemented functions in LinkedList to add the Student, and display the updated LinkedList
        */
         console.log('Adding student...')
-        const [name, year, email, specialization] = args
+        const [name, year, email, specialization] = args;
         // --------> WRITE YOUR CODE BELOW
-
+        const student = new Student (name, year, email, specialization);
+        studentManagementSystem.addStudent(student);
+        studentManagementSystem.displayStudents();
         // --------> WRITE YOUR CODE ABOVE
         break;
 
@@ -62,7 +64,9 @@ async function handleCommand(command) {
        */
       console.log('Removing student...')
       // --------> WRITE YOUR CODE BELOW
-      
+      const removeEmail = args[0];
+      studentManagementSystem.removeStudent(removeEmail);
+      studentManagementSystem.displayStudents();
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -75,7 +79,7 @@ async function handleCommand(command) {
        */
       console.log('Displaying students...')
       // --------> WRITE YOUR CODE BELOW
-
+      studentManagementSystem.displayStudents();
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -91,7 +95,13 @@ async function handleCommand(command) {
        */
       console.log('Finding student...')
       // --------> WRITE YOUR CODE BELOW
-      
+      const findEmail = args[0];
+      const foundStudent = studentManagementSystem.findStudent(findEmail);
+      if (foundStudent === -1){
+        console.log ("Student does not exist");
+      } else {
+        console.log ("Student found: ", foundStudent.getString());
+      }
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -106,8 +116,10 @@ async function handleCommand(command) {
        */
       console.log('Saving data...')
       // --------> WRITE YOUR CODE BELOW
-
+      const saveFileName = args[0];
+      studentManagementSystem.saveToJson(saveFileName);
       // --------> WRITE YOUR CODE ABOVE
+      break;
 
     case "load":
       /**
@@ -120,7 +132,9 @@ async function handleCommand(command) {
        */
       console.log('Loading data...')
       // --------> WRITE YOUR CODE BELOW
-
+      const loadFileName = args[0];
+      await studentManagementSystem.loadFromJSON(loadFileName);
+      studentManagementSystem.displayStudents();
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -134,7 +148,8 @@ async function handleCommand(command) {
        */
       console.log('Clearing data...')
       // --------> WRITE YOUR CODE BELOW
-
+      studentManagementSystem.clearStudents();
+      studentManagementSystem.displayStudents();
       // --------> WRITE YOUR CODE ABOVE
       break;
 
